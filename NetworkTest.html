@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #results { margin-top: 20px; font-size: 20px; }
+        button { padding: 10px 20px; font-size: 18px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Internet Speed Test</h1>
+    <button onclick="startSpeedTest()">Start Test</button>
+    <div id="results"></div>
+
+    <script>
+        async function startSpeedTest() {
+            document.getElementById("results").innerHTML = "Testing...";
+            
+            let downloadSpeed = await testDownloadSpeed();
+            let uploadSpeed = await testUploadSpeed();
+            let ping = await testPing();
+
+            document.getElementById("results").innerHTML = `
+                📥 Download Speed: ${downloadSpeed} Mbps <br>
+                📤 Upload Speed: ${uploadSpeed} Mbps <br>
+                ⏳ Ping: ${ping} ms
+            `;
+        }
+
+        async function testDownloadSpeed() {
+            let startTime = performance.now();
+            let dataSize = 5 * 1024 * 1024; // 5MB
+
+            await fetch(`https://speed.hetzner.de/5MB.bin`, { method: "GET" });
+
+            let duration = (performance.now() - startTime) / 1000; // Convert ms to sec
+            let speedMbps = (dataSize * 8) / (duration * 1024 * 1024);
+            return speedMbps.toFixed(2);
+        }
+
+        async function testUploadSpeed() {
+            let startTime = performance.now();
+            let data = new Uint8Array(2 * 1024 * 1024); // 2MB random data
+
+            await fetch("https://httpbin.org/post", { method: "POST", body: data });
+
+            let duration = (performance.now() - startTime) / 1000;
+            let speedMbps = (data.length * 8) / (duration * 1024 * 1024);
+            return speedMbps.toFixed(2);
+        }
+
+        async function testPing() {
+            let startTime = performance.now();
+            await fetch("https://www.google.com", { method: "HEAD", mode: "no-cors" });
+            let ping = performance.now() - startTime;
+            return ping.toFixed(2);
+        }
+    </script>
+</body>
+</html>
